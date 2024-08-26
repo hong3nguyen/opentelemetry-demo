@@ -50,7 +50,9 @@ Configuration defines pipelines which each type of telemetry data is handled bas
 
 # Otel Collector installation
 The OpenTelemetry Collector receives traces, metrics, and logs, processes the telemetry, and exports it to a wide variety of observability backends using its components. For a conceptual overview of the Collector,
-## Prerequisites
+
+## Quick run
+### Prerequisites
 
 - docker
 - Go
@@ -58,7 +60,7 @@ The OpenTelemetry Collector receives traces, metrics, and logs, processes the te
 
 > export GOBIN=${GOBIN:-$(go env GOPATH)/bin}
 
-## Environment
+### Environment
 
 ```bash
 # pull Opentelemetry collector docker image
@@ -68,7 +70,7 @@ docker pull otel/opentelemetry-collector:0.107.0
 go install github.com/open-telemetry/opentelemetry-collector-contrib/cmd/telemetrygen@latest
 ```
 
-## Generate and collect telemetry
+### Generate and collect telemetry
 launch the collector
 ``` bash
 docker run \
@@ -89,6 +91,38 @@ $GOBIN/telemetrygen traces --otlp-insecure \
 # show the trace results
 $ grep -E '^Span|(ID|Name|Kind|time|Status \w+)\s+:' ./collector-output.txt
 ```
+## Install collector
+docker
+```bash
+docker pull otel/opentelemetry-collector-contrib:0.107.0
+
+docker run otel/opentelemetry-collector-contrib:0.107.0 # or
+docker run -v $(pwd)/config.yaml:/etc/otelcol-contrib/config.yaml otel/opentelemetry-collector-contrib:0.107.0
+
+
+
+```
+
+Docker compose with docker-compose.yaml
+```yaml
+otel-collector:
+  image: otel/opentelemetry-collector-contrib
+  volumes:
+    - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
+  ports:
+    - 1888:1888 # pprof extension
+    - 8888:8888 # Prometheus metrics exposed by the Collector
+    - 8889:8889 # Prometheus exporter metrics
+    - 13133:13133 # health_check extension
+    - 4317:4317 # OTLP gRPC receiver
+    - 4318:4318 # OTLP http receiver
+    - 55679:55679 # zpages extension
+```
+
+Kubernetes
+> kubectl apply -f https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector/v0.107.0/examples/k8s/otel-config.yaml
+
+Linux
 ## Configuration
 
 ### Location
